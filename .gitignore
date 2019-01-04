@@ -1,0 +1,16 @@
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+*.test
+
+*.out
+
+/go.sum
+/vendor/
+/Godeps/
+
+.idea/
+*.iml
