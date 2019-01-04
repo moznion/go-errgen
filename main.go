@@ -103,7 +103,7 @@ package %s
 						)
 					}()
 				}
-				dst := fmt.Sprintf("%s_err_gen.go", strcase.ToSnake(structName))
+				dst := fmt.Sprintf("%s_errmsg_gen.go", strcase.ToSnake(structName))
 				if outputFilePath != "" {
 					dst = outputFilePath
 				}
