@@ -51,7 +51,8 @@ func Run(typ string, prefix string) {
 				header := fmt.Sprintf(`// This package was auto generated.
 // DO NOT EDIT BY YOUR HAND!
 
-package %s`,
+package %s
+`,
 					pkgName,
 				)
 				body := ""
@@ -64,6 +65,7 @@ package %s`,
 
 				i := 0
 				isFmtImported := false
+				isErrorsImported := false
 				for _, field := range structType.Fields.List {
 					func() {
 						defer func() {
@@ -86,11 +88,14 @@ package %s`,
 
 						vars := tagKeyValue["vars"]
 						if vars != "" && !isFmtImported {
-							header += "\n\nimport \"fmt\""
+							header += "\nimport \"fmt\""
 							isFmtImported = true
+						} else if !isErrorsImported {
+							header += "\nimport \"errors\""
+							isErrorsImported = true
 						}
 
-						body += fmt.Sprintf("\n\nfunc %s(%s) string {\n"+
+						body += fmt.Sprintf("\n\nfunc %s(%s) error {\n"+
 							"\treturn %s\n}",
 							name,
 							vars,
@@ -109,13 +114,13 @@ package %s`,
 
 func constructMessageContents(i int, varsString string, msg string, prefix string) string {
 	if varsString == "" {
-		return fmt.Sprintf("`[%s%d] %s`", prefix, i, msg)
+		return fmt.Sprintf(`errors.New("[%s%d] %s")`, prefix, i, msg)
 	}
 	varNames, err := extractVarNames(varsString)
 	if err != nil {
 		log.Fatalf("[ERROR] %s", err)
 	}
-	return fmt.Sprintf(`fmt.Sprintf("[%s%d] %s", %s)`, prefix, i, msg, strings.Join(varNames, ", "))
+	return fmt.Sprintf(`fmt.Errorf("[%s%d] %s", %s)`, prefix, i, msg, strings.Join(varNames, ", "))
 }
 
 func extractVarNames(varsString string) ([]string, error) {
