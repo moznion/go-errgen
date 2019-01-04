@@ -14,6 +14,7 @@ import (
 	"github.com/moznion/go-struct-custom-tag-parser"
 )
 
+// Run generates code for errors from a struct that defines errors.
 func Run(typ string, prefix string, outputFilePath string) {
 	dir := "."
 	p, err := build.Default.ImportDir(dir, 0)
