@@ -1,6 +1,8 @@
 errgen
 ==
 
+[![Build Status](https://travis-ci.org/moznion/go-errgen.svg?branch=master)](https://travis-ci.org/moznion/go-errgen)
+
 `errgen` generates code for errors from a struct that defines errors
 
 Installation
