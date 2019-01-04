@@ -47,12 +47,13 @@ func Run(typ string, prefix string) {
 				}
 
 				pkgName := f.Name.Name
-				code := fmt.Sprintf(`// This package was auto generated.
+				header := fmt.Sprintf(`// This package was auto generated.
 // DO NOT EDIT BY YOUR HAND!
 
 package %s`,
 					pkgName,
 				)
+				body := ""
 
 				structType, ok := typeSpec.Type.(*ast.StructType)
 				if !ok {
@@ -61,6 +62,7 @@ package %s`,
 				}
 
 				i := 0
+				isFmtImported := false
 				for _, field := range structType.Fields.List {
 					func() {
 						defer func() {
@@ -81,14 +83,31 @@ package %s`,
 						}
 						name := field.Names[0].Name
 
-						code += fmt.Sprintf("\n\nfunc %s() string {\n"+
-							"	return `%s`\n}",
+						vars := tagKeyValue["vars"]
+						if vars != "" && !isFmtImported {
+							header += "\n\nimport \"fmt\""
+							isFmtImported = true
+						}
+
+						body += fmt.Sprintf("\n\nfunc %s(%s) string {\n"+
+							"\treturn %s\n}",
 							name,
-							fmt.Sprintf("[%s%d] %s", prefix, i, msg),
+							func() string {
+								if vars == "" {
+									return ""
+								}
+								return fmt.Sprintf("%s string", vars)
+							}(),
+							func() string {
+								if vars == "" {
+									return fmt.Sprintf("`[%s%d] %s`", prefix, i, msg)
+								}
+								return fmt.Sprintf(`fmt.Sprintf("[%s%d] %s", %s)`, prefix, i, msg, vars)
+							}(),
 						)
 					}()
 				}
-				err = ioutil.WriteFile(fmt.Sprintf("%s_err_gen.go", strcase.ToSnake(structName)), []byte(code), 0644)
+				err = ioutil.WriteFile(fmt.Sprintf("%s_err_gen.go", strcase.ToSnake(structName)), []byte(header+body), 0644)
 				if err != nil {
 					log.Fatalf("[ERROR] failed output generated code to a file")
 				}
