@@ -9,6 +9,7 @@ script: make check
 
 install:
   - go get -u golang.org/x/lint/golint
+  - make installdeps
 
 sudo: false
 
