@@ -8,6 +8,7 @@ import (
 	"go/token"
 	"io/ioutil"
 	"log"
+	"strings"
 
 	"github.com/iancoleman/strcase"
 	"github.com/moznion/go-struct-custom-tag-parser"
@@ -92,18 +93,8 @@ package %s`,
 						body += fmt.Sprintf("\n\nfunc %s(%s) string {\n"+
 							"\treturn %s\n}",
 							name,
-							func() string {
-								if vars == "" {
-									return ""
-								}
-								return fmt.Sprintf("%s string", vars)
-							}(),
-							func() string {
-								if vars == "" {
-									return fmt.Sprintf("`[%s%d] %s`", prefix, i, msg)
-								}
-								return fmt.Sprintf(`fmt.Sprintf("[%s%d] %s", %s)`, prefix, i, msg, vars)
-							}(),
+							vars,
+							constructMessageContents(i, vars, msg, prefix),
 						)
 					}()
 				}
@@ -114,4 +105,30 @@ package %s`,
 			}
 		}
 	}
+}
+
+func constructMessageContents(i int, varsString string, msg string, prefix string) string {
+	if varsString == "" {
+		return fmt.Sprintf("`[%s%d] %s`", prefix, i, msg)
+	}
+	varNames, err := extractVarNames(varsString)
+	if err != nil {
+		log.Fatalf("[ERROR] %s", err)
+	}
+	return fmt.Sprintf(`fmt.Sprintf("[%s%d] %s", %s)`, prefix, i, msg, strings.Join(varNames, ", "))
+}
+
+func extractVarNames(varsString string) ([]string, error) {
+	vars := strings.Split(varsString, ",")
+	varNames := make([]string, len(vars))
+
+	for i, v := range vars {
+		leaves := strings.Split(strings.TrimSpace(v), " ")
+		if len(leaves) != 2 {
+			return nil, fmt.Errorf("invalid syntax of vars has detected: given=%s", v)
+		}
+		varNames[i] = leaves[0]
+	}
+
+	return varNames, nil
 }
