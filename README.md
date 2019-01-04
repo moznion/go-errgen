@@ -73,7 +73,7 @@ Custom Tag Syntax
 
 example:
 
-```
+```go
 type myErrors struct {
 	FooErr error `errmsg:"this is FOO error [%d, %s]" vars:"hoge int, fuga string"`
 }
