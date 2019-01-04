@@ -29,7 +29,7 @@ func init() {
 	flag.Parse()
 
 	if versionOption {
-		fmt.Printf("v%s/%s", version, revision)
+		fmt.Printf("v%s/%s\n", version, revision)
 		os.Exit(0)
 	}
 
