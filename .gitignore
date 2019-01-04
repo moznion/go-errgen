@@ -19,3 +19,5 @@
 /test/*_errmsg_gen.go
 
 errgen
+/bin/*
+!/bin/.gitkeep
