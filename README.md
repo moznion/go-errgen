@@ -23,6 +23,8 @@ Usage of errgen:
         [optional] prefix of error type (default "ERR-")
   -type string
         [mandatory] struct type name of source of error definition
+  -version
+        show version and revision
 ```
 
 Synopsis

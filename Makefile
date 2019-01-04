@@ -1,5 +1,9 @@
 .PHONY: test
 
+PKGS := $(shell go list ./...)
+CURRENT_REVISION := $(shell git rev-parse --short HEAD)
+CURRENT_VERSION := $(shell git tag | sort -r | head -1)
+
 check: test lint vet fmt-check
 
 test: test-clean test-build test-gen
@@ -31,3 +35,12 @@ fmt-check:
 fmt:
 	gofmt -w -s *.go
 	goimports -w *.go
+
+installdeps:
+	GO111MODULE=on go mod vendor
+
+build: installdeps
+	go build \
+		-ldflags "-X main.revision=$(CURRENT_REVISION) -X main.version=$(CURRENT_VERSION)" \
+		./cmd/errgen
+
