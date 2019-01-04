@@ -14,7 +14,7 @@ import (
 	"github.com/moznion/go-struct-custom-tag-parser"
 )
 
-func Run(typ string, prefix string) {
+func Run(typ string, prefix string, outputFilePath string) {
 	dir := "."
 	p, err := build.Default.ImportDir(dir, 0)
 	if err != nil {
@@ -103,7 +103,12 @@ package %s
 						)
 					}()
 				}
-				err = ioutil.WriteFile(fmt.Sprintf("%s_err_gen.go", strcase.ToSnake(structName)), []byte(header+body), 0644)
+				dst := fmt.Sprintf("%s_err_gen.go", strcase.ToSnake(structName))
+				if outputFilePath != "" {
+					dst = outputFilePath
+				}
+
+				err = ioutil.WriteFile(dst, []byte(header+body), 0644)
 				if err != nil {
 					log.Fatalf("[ERROR] failed output generated code to a file")
 				}

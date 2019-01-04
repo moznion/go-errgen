@@ -9,12 +9,12 @@ import (
 
 var typ string
 var prefix string
-
-// TODO out filename
+var outputFilePath string
 
 func init() {
 	flag.StringVar(&typ, "type", "", "[mandatory] struct type name of source of error definition")
 	flag.StringVar(&prefix, "prefix", "ERR-", "[optional] prefix of error type")
+	flag.StringVar(&outputFilePath, "out-file", "", "[optional] the output destination path of the generated code")
 
 	flag.Parse()
 
@@ -24,5 +24,5 @@ func init() {
 }
 
 func main() {
-	errgen.Run(typ, prefix)
+	errgen.Run(typ, prefix, outputFilePath)
 }
