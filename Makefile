@@ -20,10 +20,10 @@ test-gen:
 	PATH="$$(pwd)/test/bin/:$$PATH" go generate ./...
 
 lint:
-	golint $(PKGS)
+	golint -set_exit_status $(PKGS | sed -e s#github.com/moznion/go-errgen/test##)
 
 vet:
-	go vet $(PKGS)
+	go vet $(PKGS | sed -e s#github.com/moznion/go-errgen/test##)
 
 fmt-check:
 	gofmt -l -s *.go | grep [^*][.]go$$; \
