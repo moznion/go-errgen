@@ -59,3 +59,21 @@ func TestGeneratedErrorMessageWithArbitraryOutputFilePath(t *testing.T) {
 		}
 	}
 }
+
+func TestGeneratedErrorMessageWithObsoleted(t *testing.T) {
+	filePath := "test/obsoleted_err_msg_errmsg_gen.go"
+	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		t.Fatalf("file doesn't exist: %s", filePath)
+	}
+
+	dataset := map[string]error{
+		"[ERR-0] this is error 1": test.OneErr(),
+		"[ERR-2] this is error 3": test.ThreeErr(),
+	}
+
+	for expected, got := range dataset {
+		if got.Error() != expected {
+			t.Errorf(`got unexpected result: expected="%s", got="%s"`, expected, got)
+		}
+	}
+}

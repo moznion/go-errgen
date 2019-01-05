@@ -16,3 +16,10 @@ type prefixErrMsg struct {
 type pathSpecifiedErrMsg struct {
 	FooBarErr error `errmsg:"this is FOOBAR error"`
 }
+
+//go:generate errgen -type=obsoletedErrMsg
+type obsoletedErrMsg struct {
+	OneErr   error `errmsg:"this is error 1"`
+	TwoErr   error `errmsg:"this is error 2" obsoleted:"true"`
+	ThreeErr error `errmsg:"this is error 3"`
+}

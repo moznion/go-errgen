@@ -76,6 +76,7 @@ example:
 ```go
 type myErrors struct {
 	FooErr error `errmsg:"this is FOO error [%d, %s]" vars:"hoge int, fuga string"`
+	BarErr error `errmsg:"this is BAR error" obsoleted:"true"`
 }
 ```
 
@@ -88,10 +89,18 @@ type myErrors struct {
 
 ### `vars`
 
-- This is a optional parameter
+- This is an optional parameter
 - The generated function uses this value as a function parameter
   - i.e. this parameter must be the valid syntax of golang's function parameter
 - And variables that are described by this parameter will be filled into `sprintf` style placeholders of `errmsg`
+
+### `obsoleted"
+
+- This is an optional parameter
+- If this parameter is __not empty__, the error message won't be generated as go code
+  - But it increments a serial number of prefix
+  - This parameter is useful for excluding the error message from the target of code generation
+    - See also [Notes](#Notes)
 
 Notes
 --
@@ -103,6 +112,7 @@ Notes
       - Remove an error message definition from the struct
       - Change order of error messages
     - => __You should only append error definitions__
+      - Please consider using `obsoleted` parameter to exclude an error message from the target of code generation
 
 License
 --

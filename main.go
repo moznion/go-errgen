@@ -76,7 +76,11 @@ package %s
 						tagValue := field.Tag.Value[1 : len(field.Tag.Value)-1]
 						tagKeyValue, err := tagparser.Parse(tagValue, true)
 						if err != nil {
-							// TODO
+							// TODO be fatalf
+							return
+						}
+
+						if tagKeyValue["obsoleted"] != "" {
 							return
 						}
 
