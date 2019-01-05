@@ -94,7 +94,7 @@ type myErrors struct {
   - i.e. this parameter must be the valid syntax of golang's function parameter
 - And variables that are described by this parameter will be filled into `sprintf` style placeholders of `errmsg`
 
-### `obsoleted"
+### `obsoleted`
 
 - This is an optional parameter
 - If this parameter is __not empty__, the error message won't be generated as go code
