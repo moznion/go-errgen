@@ -3,7 +3,11 @@ errgen
 
 [![Build Status](https://travis-ci.org/moznion/go-errgen.svg?branch=master)](https://travis-ci.org/moznion/go-errgen)
 
-`errgen` generates code for errors from a struct that defines errors
+`errgen` is a code generator. This library generates functions that return error according to the definition described in the `struct`.
+
+And the function can receive variables as the function parameters. The parameters will be bound into placeholders that are compatible with sprintf.
+
+Please refer to the [synopsis](#Synopsis) for a concrete example.
 
 Installation
 --
@@ -113,6 +117,17 @@ Notes
       - Change order of error messages
     - => __You should only append error definitions__
       - Please consider using `obsoleted` parameter to exclude an error message from the target of code generation
+
+FAQ
+--
+
+### Why don't use map like structure instead of struct?
+
+A map doesn't ensure the order of members. That is a bit inconvenient to generate error messages with a prefix that contains the serial number.
+
+### Why don't use slice like structure instead of struct?
+
+It's a good point. But I (i.e. moznion) don't want to consider the unbalanced slice members; unbalanced means odd number of members.
 
 License
 --
