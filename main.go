@@ -8,10 +8,10 @@ import (
 	"go/token"
 	"io/ioutil"
 	"log"
+	"reflect"
 	"strings"
 
 	"github.com/iancoleman/strcase"
-	"github.com/moznion/go-struct-custom-tag-parser"
 )
 
 // Run generates code for errors from a struct that defines errors.
@@ -73,25 +73,20 @@ package %s
 							i++
 						}()
 
-						tagValue := field.Tag.Value[1 : len(field.Tag.Value)-1]
-						tagKeyValue, err := tagparser.Parse(tagValue, true)
-						if err != nil {
-							// TODO be fatalf
+						tagValue := reflect.StructTag(field.Tag.Value[1 : len(field.Tag.Value)-1])
+
+						if tagValue.Get("obsoleted") != "" {
 							return
 						}
 
-						if tagKeyValue["obsoleted"] != "" {
-							return
-						}
-
-						msg := tagKeyValue["errmsg"]
+						msg := tagValue.Get("errmsg")
 						if msg == "" {
 							// TODO
 							return
 						}
 						name := field.Names[0].Name
 
-						vars := tagKeyValue["vars"]
+						vars := tagValue.Get("vars")
 						if vars != "" && !isFmtImported {
 							header += "\nimport \"fmt\""
 							isFmtImported = true
