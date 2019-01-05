@@ -32,19 +32,22 @@ func Run(typ string, prefix string, outputFilePath string) {
 		for _, decl := range f.Decls {
 			genDecl, ok := decl.(*ast.GenDecl)
 			if !ok {
-				// TODO
 				continue
 			}
 
 			for _, spec := range genDecl.Specs {
 				typeSpec, ok := spec.(*ast.TypeSpec)
 				if !ok {
-					// TODO
 					continue
 				}
+
 				structName := typeSpec.Name.Name
 				if typ != structName {
-					// TODO
+					continue
+				}
+
+				structType, ok := typeSpec.Type.(*ast.StructType)
+				if !ok {
 					continue
 				}
 
@@ -57,12 +60,6 @@ package %s
 					pkgName,
 				)
 				body := ""
-
-				structType, ok := typeSpec.Type.(*ast.StructType)
-				if !ok {
-					// TODO
-					continue
-				}
 
 				i := 0
 				isFmtImported := false
@@ -79,12 +76,12 @@ package %s
 							return
 						}
 
+						name := field.Names[0].Name
 						msg := tagValue.Get("errmsg")
 						if msg == "" {
-							// TODO
+							log.Printf("[WARN] `errmsg` tag is missing at `%s` field", name)
 							return
 						}
-						name := field.Names[0].Name
 
 						vars := tagValue.Get("vars")
 						if vars != "" && !isFmtImported {
