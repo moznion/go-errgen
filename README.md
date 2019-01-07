@@ -22,7 +22,7 @@ Usage
 ```
 Usage of errgen:
   -out-file string
-        [optional] the output destination path of the generated code
+        [optional] the output destination path of the generated code (default "<snake_case_struct_name>_errmsg_gen.go")
   -prefix string
         [optional] prefix of error type (default "ERR-")
   -type string

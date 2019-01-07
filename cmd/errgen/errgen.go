@@ -23,7 +23,7 @@ var versionOption bool
 func init() {
 	flag.StringVar(&typ, "type", "", "[mandatory] struct type name of source of error definition")
 	flag.StringVar(&prefix, "prefix", "ERR-", "[optional] prefix of error type")
-	flag.StringVar(&outputFilePath, "out-file", "", "[optional] the output destination path of the generated code")
+	flag.StringVar(&outputFilePath, "out-file", "", `[optional] the output destination path of the generated code (default "<snake_case_struct_name>_errmsg_gen.go")`)
 	flag.BoolVar(&versionOption, "version", false, "show version and revision")
 
 	flag.Parse()
