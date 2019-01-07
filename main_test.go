@@ -14,8 +14,8 @@ func TestGeneratedBasicErrorMessage(t *testing.T) {
 	}
 
 	dataset := map[string]error{
-		"[ERR-0] this is FOO error":                    test.FooErr(),
-		"[ERR-1] this is BAR error [123, hello world]": test.BarErr(123, "hello world"),
+		"[ERR-1] this is FOO error":                    test.FooErr(),
+		"[ERR-2] this is BAR error [123, hello world]": test.BarErr(123, "hello world"),
 	}
 
 	for expected, got := range dataset {
@@ -42,8 +42,8 @@ func TestGeneratedErrorMessageWithPrefix(t *testing.T) {
 	}
 
 	dataset := map[string]error{
-		"[PREF-0] this is BUZ error":                    test.BuzErr(),
-		"[PREF-1] this is QUX error [123, hello world]": test.QuxErr(123, "hello world"),
+		"[PREF-1] this is BUZ error":                    test.BuzErr(),
+		"[PREF-2] this is QUX error [123, hello world]": test.QuxErr(123, "hello world"),
 	}
 
 	for expected, got := range dataset {
@@ -70,7 +70,7 @@ func TestGeneratedErrorMessageWithArbitraryOutputFilePath(t *testing.T) {
 	}
 
 	dataset := map[string]error{
-		"[ERR-0] this is FOOBAR error": test.FooBarErr(),
+		"[ERR-1] this is FOOBAR error": test.FooBarErr(),
 	}
 
 	for expected, got := range dataset {
@@ -96,8 +96,8 @@ func TestGeneratedErrorMessageWithObsoleted(t *testing.T) {
 	}
 
 	dataset := map[string]error{
-		"[ERR-0] this is error 1": test.OneErr(),
-		"[ERR-2] this is error 3": test.ThreeErr(),
+		"[ERR-1] this is error 1": test.OneErr(),
+		"[ERR-3] this is error 3": test.ThreeErr(),
 	}
 
 	for expected, got := range dataset {

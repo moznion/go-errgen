@@ -62,7 +62,7 @@ package %s
 				)
 				body := ""
 
-				i := 0
+				i := 1
 				isFmtImported := false
 				isErrorsImported := false
 				for _, field := range structType.Fields.List {
