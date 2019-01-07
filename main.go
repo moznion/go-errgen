@@ -22,6 +22,7 @@ func Run(typ string, prefix string, outputFilePath string) {
 		log.Fatalf("[ERROR] cannot process directory %s: %s", dir, err)
 	}
 
+	msgs := make([]string, 0)
 	for _, goFile := range p.GoFiles {
 		fset := token.NewFileSet()
 		f, err := parser.ParseFile(fset, goFile, nil, parser.ParseComments)
@@ -92,14 +93,23 @@ package %s
 							isErrorsImported = true
 						}
 
+						msgCore, msgCode := constructMessageContents(i, vars, msg, prefix)
 						body += fmt.Sprintf("\n\nfunc %s(%s) error {\n"+
 							"\treturn %s\n}",
 							name,
 							vars,
-							constructMessageContents(i, vars, msg, prefix),
+							msgCode,
 						)
+						msgs = append(msgs, msgCore)
 					}()
 				}
+
+				body += fmt.Sprintf("\n\nfunc %sErrors() []string {\n\treturn []string{\n", strcase.ToCamel(structName))
+				for _, m := range msgs {
+					body += fmt.Sprintf("\t\t`%s`,\n", m)
+				}
+				body += "\t}\n}\n"
+
 				dst := fmt.Sprintf("%s_errmsg_gen.go", strcase.ToSnake(structName))
 				if outputFilePath != "" {
 					dst = outputFilePath
@@ -114,15 +124,16 @@ package %s
 	}
 }
 
-func constructMessageContents(i int, varsString string, msg string, prefix string) string {
+func constructMessageContents(i int, varsString string, msg string, prefix string) (string, string) {
+	msgCore := fmt.Sprintf("[%s%d] %s", prefix, i, msg)
 	if varsString == "" {
-		return fmt.Sprintf(`errors.New("[%s%d] %s")`, prefix, i, msg)
+		return msgCore, fmt.Sprintf(`errors.New("%s")`, msgCore)
 	}
 	varNames, err := extractVarNames(varsString)
 	if err != nil {
 		log.Fatalf("[ERROR] %s", err)
 	}
-	return fmt.Sprintf(`fmt.Errorf("[%s%d] %s", %s)`, prefix, i, msg, strings.Join(varNames, ", "))
+	return msgCore, fmt.Sprintf(`fmt.Errorf("%s", %s)`, msgCore, strings.Join(varNames, ", "))
 }
 
 func extractVarNames(varsString string) ([]string, error) {
