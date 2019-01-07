@@ -64,11 +64,18 @@ import "errors"
 import "fmt"
 
 func FooErr() error {
-	return errors.New("[ERR-0] this is FOO error")
+	return errors.New("[ERR-1] this is FOO error")
 }
 
 func BarErr(hoge int, fuga string) error {
-	return fmt.Errorf("[ERR-1] this is BAR error [%d, %s]", hoge, fuga)
+	return fmt.Errorf("[ERR-2] this is BAR error [%d, %s]", hoge, fuga)
+}
+
+func MyErrorsList() []string {
+	return []string{
+		`[ERR-1] this is FOO error`,
+		`[ERR-2] this is BAR error [%d, %s]`,
+	}
 }
 ```
 
