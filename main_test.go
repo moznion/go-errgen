@@ -28,7 +28,7 @@ func TestGeneratedBasicErrorMessage(t *testing.T) {
 		`[ERR-1] this is FOO error`,
 		`[ERR-2] this is BAR error [%d, %s]`,
 	}
-	for i, got := range test.BasicErrMsgErrors() {
+	for i, got := range test.BasicErrMsgList() {
 		if exp := expected[i]; got != exp {
 			t.Errorf(`got unexpected result: expected="%s", got="%s"`, exp, got)
 		}
@@ -56,7 +56,7 @@ func TestGeneratedErrorMessageWithPrefix(t *testing.T) {
 		`[PREF-1] this is BUZ error`,
 		`[PREF-2] this is QUX error [%d, %s]`,
 	}
-	for i, got := range test.PrefixErrMsgErrors() {
+	for i, got := range test.PrefixErrMsgList() {
 		if exp := expected[i]; got != exp {
 			t.Errorf(`got unexpected result: expected="%s", got="%s"`, exp, got)
 		}
@@ -82,7 +82,7 @@ func TestGeneratedErrorMessageWithArbitraryOutputFilePath(t *testing.T) {
 	expected := []string{
 		"[ERR-1] this is FOOBAR error",
 	}
-	for i, got := range test.PathSpecifiedErrMsgErrors() {
+	for i, got := range test.PathSpecifiedErrMsgList() {
 		if exp := expected[i]; got != exp {
 			t.Errorf(`got unexpected result: expected="%s", got="%s"`, exp, got)
 		}
@@ -110,7 +110,7 @@ func TestGeneratedErrorMessageWithObsoleted(t *testing.T) {
 		`[ERR-1] this is error 1`,
 		`[ERR-3] this is error 3`,
 	}
-	for i, got := range test.ObsoletedErrMsgErrors() {
+	for i, got := range test.ObsoletedErrMsgList() {
 		if exp := expected[i]; got != exp {
 			t.Errorf(`got unexpected result: expected="%s", got="%s"`, exp, got)
 		}

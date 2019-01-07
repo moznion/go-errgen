@@ -104,7 +104,7 @@ package %s
 					}()
 				}
 
-				body += fmt.Sprintf("\n\nfunc %sErrors() []string {\n\treturn []string{\n", strcase.ToCamel(structName))
+				body += fmt.Sprintf("\n\nfunc %sList() []string {\n\treturn []string{\n", strcase.ToCamel(structName))
 				for _, m := range msgs {
 					body += fmt.Sprintf("\t\t`%s`,\n", m)
 				}
