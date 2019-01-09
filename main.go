@@ -94,8 +94,9 @@ package %s
 						}
 
 						msgCore, msgCode := constructMessageContents(i, vars, msg, prefix)
-						body += fmt.Sprintf("\n\nfunc %s(%s) error {\n"+
+						body += fmt.Sprintf("\n\n// %s returns the error.\nfunc %s(%s) error {\n"+
 							"\treturn %s\n}",
+							name,
 							name,
 							vars,
 							msgCode,
@@ -104,7 +105,8 @@ package %s
 					}()
 				}
 
-				body += fmt.Sprintf("\n\nfunc %sList() []string {\n\treturn []string{\n", strcase.ToCamel(structName))
+				funcName := strcase.ToCamel(structName)
+				body += fmt.Sprintf("\n\n// %sList returns the list of errors.\nfunc %sList() []string {\n\treturn []string{\n", funcName, funcName)
 				for _, m := range msgs {
 					body += fmt.Sprintf("\t\t`%s`,\n", m)
 				}
