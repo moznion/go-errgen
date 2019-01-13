@@ -129,13 +129,13 @@ package %s
 func constructMessageContents(i int, varsString string, msg string, prefix string) (string, string) {
 	msgCore := fmt.Sprintf("[%s%d] %s", prefix, i, msg)
 	if varsString == "" {
-		return msgCore, fmt.Sprintf(`errors.New("%s")`, msgCore)
+		return msgCore, fmt.Sprintf("errors.New(`%s`)", msgCore)
 	}
 	varNames, err := extractVarNames(varsString)
 	if err != nil {
 		log.Fatalf("[ERROR] %s", err)
 	}
-	return msgCore, fmt.Sprintf(`fmt.Errorf("%s", %s)`, msgCore, strings.Join(varNames, ", "))
+	return msgCore, fmt.Sprintf("fmt.Errorf(`%s`, %s)", msgCore, strings.Join(varNames, ", "))
 }
 
 func extractVarNames(varsString string) ([]string, error) {
