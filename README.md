@@ -16,6 +16,8 @@ Installation
 $ go get -u github.com/moznion/go-errgen/cmd/errgen
 ```
 
+And this library requires `goimports` that is on executable path.
+
 Usage
 --
 
