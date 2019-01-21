@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/iancoleman/strcase"
+	g "github.com/moznion/gowrtr/generator"
 )
 
 // Run generates code for errors from a struct that defines errors.
@@ -22,7 +23,6 @@ func Run(typ string, prefix string, outputFilePath string) {
 		log.Fatalf("[ERROR] cannot process directory %s: %s", dir, err)
 	}
 
-	msgs := make([]string, 0)
 	for _, goFile := range p.GoFiles {
 		fset := token.NewFileSet()
 		f, err := parser.ParseFile(fset, goFile, nil, parser.ParseComments)
@@ -53,18 +53,17 @@ func Run(typ string, prefix string, outputFilePath string) {
 				}
 
 				pkgName := f.Name.Name
-				header := fmt.Sprintf(`// This package was auto generated.
-// DO NOT EDIT BY YOUR HAND!
 
-package %s
-`,
-					pkgName,
+				root := g.NewRoot(
+					g.NewComment(" This package was auto generated."),
+					g.NewComment(" DO NOT EDIT BY YOUR HAND!"),
+					g.NewNewline(),
+					g.NewPackage(pkgName),
 				)
-				body := ""
+
+				listFuncReturnItems := make([]string, 0)
 
 				i := 1
-				isFmtImported := false
-				isErrorsImported := false
 				for _, field := range structType.Fields.List {
 					func() {
 						defer func() {
@@ -85,39 +84,55 @@ package %s
 						}
 
 						vars := tagValue.Get("vars")
-						if vars != "" && !isFmtImported {
-							header += "\nimport \"fmt\""
-							isFmtImported = true
-						} else if !isErrorsImported {
-							header += "\nimport \"errors\""
-							isErrorsImported = true
-						}
-
 						msgCore, msgCode := constructMessageContents(i, vars, msg, prefix)
-						body += fmt.Sprintf("\n\n// %s returns the error.\nfunc %s(%s) error {\n"+
-							"\treturn %s\n}",
-							name,
-							name,
-							vars,
-							msgCode,
+
+						root = root.AddStatements(
+							g.NewNewline(),
+							g.NewCommentf(" %s returns the error.", name),
 						)
-						msgs = append(msgs, msgCore)
+
+						funcSig := g.NewFuncSignature(name).ReturnTypes("error")
+						for _, v := range strings.Split(vars, ",") {
+							if v == "" {
+								continue
+							}
+							p := strings.Split(strings.TrimSpace(v), " ")
+							if len(p) != 2 {
+								log.Fatalf("invalid syntax of vars has detected: given=%s", v)
+							}
+							funcSig = funcSig.AddParameters(g.NewFuncParameter(p[0], p[1]))
+						}
+						root = root.AddStatements(
+							g.NewFunc(nil, funcSig, g.NewReturnStatement(msgCode)),
+						)
+
+						listFuncReturnItems = append(listFuncReturnItems, msgCore)
 					}()
 				}
 
 				funcName := strcase.ToCamel(structName)
-				body += fmt.Sprintf("\n\n// %sList returns the list of errors.\nfunc %sList() []string {\n\treturn []string{\n", funcName, funcName)
-				for _, m := range msgs {
-					body += fmt.Sprintf("\t\t`%s`,\n", m)
+
+				root = root.AddStatements(
+					g.NewNewline(),
+					g.NewCommentf(" %sList returns the list of errors.", funcName),
+					g.NewFunc(
+						nil,
+						g.NewFuncSignature(funcName+"List").ReturnTypes("[]string"),
+						// TODO use composite literal
+						g.NewReturnStatement(fmt.Sprintf("%#v", listFuncReturnItems)),
+					),
+				)
+				generated, err := root.Gofmt("-s").Goimports().Generate(0)
+				if err != nil {
+					log.Fatalf("[ERROR] failed to generate code: err=%s", err)
 				}
-				body += "\t}\n}\n"
 
 				dst := fmt.Sprintf("%s_errmsg_gen.go", strcase.ToSnake(structName))
 				if outputFilePath != "" {
 					dst = outputFilePath
 				}
 
-				err = ioutil.WriteFile(dst, []byte(header+body), 0644)
+				err = ioutil.WriteFile(dst, []byte(generated), 0644)
 				if err != nil {
 					log.Fatalf("[ERROR] failed output generated code to a file")
 				}
