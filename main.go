@@ -86,12 +86,16 @@ func Run(typ string, prefix string, outputFilePath string) {
 						vars := tagValue.Get("vars")
 						msgCore, msgCode := constructMessageContents(i, vars, msg, prefix)
 
+						retType := name + "Type"
+
 						root = root.AddStatements(
+							g.NewNewline(),
+							g.NewRawStatementf("type %s error", retType),
 							g.NewNewline(),
 							g.NewCommentf(" %s returns the error.", name),
 						)
 
-						funcSig := g.NewFuncSignature(name).ReturnTypes("error")
+						funcSig := g.NewFuncSignature(name).ReturnTypes(retType)
 						for _, v := range strings.Split(vars, ",") {
 							if v == "" {
 								continue
