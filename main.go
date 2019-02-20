@@ -96,6 +96,7 @@ func Run(typ string, prefix string, outputFilePath string) {
 						)
 
 						funcSig := g.NewFuncSignature(name).ReturnTypes(retType)
+						wrapFuncSig := g.NewFuncSignature(name + "Wrap").ReturnTypes(retType)
 						for _, v := range strings.Split(vars, ",") {
 							if v == "" {
 								continue
@@ -105,9 +106,15 @@ func Run(typ string, prefix string, outputFilePath string) {
 								log.Fatalf("invalid syntax of vars has detected: given=%s", v)
 							}
 							funcSig = funcSig.AddParameters(g.NewFuncParameter(p[0], p[1]))
+							wrapFuncSig = wrapFuncSig.AddParameters(g.NewFuncParameter(p[0], p[1]))
 						}
+						wrapFuncSig = wrapFuncSig.AddParameters(g.NewFuncParameter("err", "error"))
+
 						root = root.AddStatements(
 							g.NewFunc(nil, funcSig, g.NewReturnStatement(msgCode)),
+							g.NewFunc(nil, wrapFuncSig, g.NewReturnStatement(
+								fmt.Sprintf("errors.Wrap(%s, err.Error())", msgCode),
+							)),
 						)
 
 						listFuncReturnItems = append(listFuncReturnItems, msgCore)
