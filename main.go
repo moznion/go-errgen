@@ -62,6 +62,8 @@ func Run(typ string, prefix string, outputFilePath string) {
 				)
 
 				listFuncReturnItems := make([]string, 0)
+				funcNames := make([]string, 0)
+				identifiers := make([]string, 0)
 
 				i := 1
 				for _, field := range structType.Fields.List {
@@ -76,27 +78,25 @@ func Run(typ string, prefix string, outputFilePath string) {
 							return
 						}
 
-						name := field.Names[0].Name
+						funcName := field.Names[0].Name
+						funcNames = append(funcNames, funcName)
 						msg := tagValue.Get("errmsg")
 						if msg == "" {
-							log.Printf("[WARN] `errmsg` tag is missing at `%s` field", name)
+							log.Printf("[WARN] `errmsg` tag is missing at `%s` field", funcName)
 							return
 						}
 
 						vars := tagValue.Get("vars")
-						msgCore, msgCode := constructMessageContents(i, vars, msg, prefix)
-
-						retType := name + "Type"
+						msgCore, msgCode, identifier := constructMessageContents(i, vars, msg, prefix)
+						identifiers = append(identifiers, identifier)
 
 						root = root.AddStatements(
 							g.NewNewline(),
-							g.NewRawStatementf("type %s error", retType),
-							g.NewNewline(),
-							g.NewCommentf(" %s returns the error.", name),
+							g.NewCommentf(" %s returns the error.", funcName),
 						)
 
-						funcSig := g.NewFuncSignature(name).ReturnTypes(retType)
-						wrapFuncSig := g.NewFuncSignature(name + "Wrap").ReturnTypes(retType)
+						funcSig := g.NewFuncSignature(funcName).ReturnTypes("error")
+						wrapFuncSig := g.NewFuncSignature(funcName + "Wrap").ReturnTypes("error")
 						for _, v := range strings.Split(vars, ",") {
 							if v == "" {
 								continue
@@ -125,14 +125,64 @@ func Run(typ string, prefix string, outputFilePath string) {
 
 				root = root.AddStatements(
 					g.NewNewline(),
+					g.NewRawStatementf("type %sType int", funcName),
+					g.NewNewline(),
+					g.NewRawStatement("const ("),
+				)
+
+				for i, fname := range funcNames {
+					root = root.AddStatements(
+						g.NewNewline(),
+						g.NewRawStatementf("%sType", fname).WithNewline(false),
+					)
+					if i == 0 {
+						root = root.AddStatements(g.NewRawStatementf(" %sType = iota", funcName).WithNewline(false))
+					}
+				}
+				root = root.AddStatements(
+					g.NewNewline(),
+					g.NewRawStatementf("%sUnknownType", funcName),
+					g.NewNewline(),
+					g.NewRawStatement(")"),
+				)
+
+				root = root.AddStatements(
+					g.NewNewline(),
 					g.NewCommentf(" %sList returns the list of errors.", funcName),
 					g.NewFunc(
 						nil,
-						g.NewFuncSignature(funcName+"List").ReturnTypes("[]string"),
+						g.NewFuncSignature("List"+funcName).ReturnTypes("[]string"),
 						// TODO use composite literal
 						g.NewReturnStatement(fmt.Sprintf("%#v", listFuncReturnItems)),
 					),
+					g.NewNewline(),
+					g.NewCommentf(" Identify%s checks the identity of an error", funcName),
 				)
+
+				identifyFuncSig := g.NewFuncSignature("Identify" + funcName).
+					Parameters(g.NewFuncParameter("err", "error")).
+					ReturnTypes(funcName + "Type")
+
+				switchStmt := g.NewSwitch("")
+				for i, fname := range funcNames {
+					switchStmt = switchStmt.AddCase(g.NewCase(
+						fmt.Sprintf(`strings.HasPrefix(errStr, "%s")`, identifiers[i]),
+						g.NewReturnStatement(fmt.Sprintf("%sType", fname)),
+					))
+				}
+				switchStmt = switchStmt.Default(
+					g.NewDefaultCase(g.NewReturnStatement(fmt.Sprintf("%sUnknownType", funcName))),
+				)
+
+				root = root.AddStatements(
+					g.NewFunc(
+						nil,
+						identifyFuncSig,
+						g.NewRawStatementf("errStr := err.Error()"),
+						switchStmt,
+					),
+				)
+
 				generated, err := root.Gofmt("-s").Goimports().Generate(0)
 				if err != nil {
 					log.Fatalf("[ERROR] failed to generate code: err=%s", err)
@@ -152,16 +202,17 @@ func Run(typ string, prefix string, outputFilePath string) {
 	}
 }
 
-func constructMessageContents(i int, varsString string, msg string, prefix string) (string, string) {
-	msgCore := fmt.Sprintf("[%s%d] %s", prefix, i, msg)
+func constructMessageContents(i int, varsString string, msg string, prefix string) (string, string, string) {
+	identifier := fmt.Sprintf("[%s%d]", prefix, i)
+	msgCore := fmt.Sprintf("%s %s", identifier, msg)
 	if varsString == "" {
-		return msgCore, fmt.Sprintf("errors.New(`%s`)", msgCore)
+		return msgCore, fmt.Sprintf("errors.New(`%s`)", msgCore), identifier
 	}
 	varNames, err := extractVarNames(varsString)
 	if err != nil {
 		log.Fatalf("[ERROR] %s", err)
 	}
-	return msgCore, fmt.Sprintf("fmt.Errorf(`%s`, %s)", msgCore, strings.Join(varNames, ", "))
+	return msgCore, fmt.Sprintf("fmt.Errorf(`%s`, %s)", msgCore, strings.Join(varNames, ", ")), identifier
 }
 
 func extractVarNames(varsString string) ([]string, error) {
