@@ -59,6 +59,8 @@ func Run(typ string, prefix string, outputFilePath string) {
 					g.NewComment(" DO NOT EDIT BY YOUR HAND!"),
 					g.NewNewline(),
 					g.NewPackage(pkgName),
+					g.NewNewline(),
+					g.NewImport("github.com/pkg/errors"),
 				)
 
 				listFuncReturnItems := make([]string, 0)
@@ -148,7 +150,7 @@ func Run(typ string, prefix string, outputFilePath string) {
 
 				root = root.AddStatements(
 					g.NewNewline(),
-					g.NewCommentf(" %sList returns the list of errors.", funcName),
+					g.NewCommentf(" List%s returns the list of errors.", funcName),
 					g.NewFunc(
 						nil,
 						g.NewFuncSignature("List"+funcName).ReturnTypes("[]string"),
