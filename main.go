@@ -115,7 +115,7 @@ func Run(typ string, prefix string, outputFilePath string) {
 						root = root.AddStatements(
 							g.NewFunc(nil, funcSig, g.NewReturnStatement(msgCode)),
 							g.NewFunc(nil, wrapFuncSig, g.NewReturnStatement(
-								fmt.Sprintf("errors.Wrap(%s, err.Error())", msgCode),
+								fmt.Sprintf(`errors.Wrap(err, "%s")`, msgCore),
 							)),
 						)
 
