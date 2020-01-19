@@ -92,11 +92,6 @@ func Run(typ string, prefix string, outputFilePath string) {
 						msgCore, msgCode, identifier := constructMessageContents(i, vars, msg, prefix)
 						identifiers = append(identifiers, identifier)
 
-						root = root.AddStatements(
-							g.NewNewline(),
-							g.NewCommentf(" %s returns the error.", funcName),
-						)
-
 						funcSig := g.NewFuncSignature(funcName).ReturnTypes("error")
 						wrapFuncSig := g.NewFuncSignature(funcName + "Wrap").ReturnTypes("error")
 						for _, v := range strings.Split(vars, ",") {
@@ -113,7 +108,11 @@ func Run(typ string, prefix string, outputFilePath string) {
 						wrapFuncSig = wrapFuncSig.AddParameters(g.NewFuncParameter("err", "error"))
 
 						root = root.AddStatements(
+							g.NewNewline(),
+							g.NewCommentf(" %s returns the error.", funcName),
 							g.NewFunc(nil, funcSig, g.NewReturnStatement(msgCode)),
+							g.NewNewline(),
+							g.NewCommentf(" %s wraps the error.", funcName+"Wrap"),
 							g.NewFunc(nil, wrapFuncSig, g.NewReturnStatement(
 								fmt.Sprintf(`errors.Wrap(err, "%s")`, msgCore),
 							)),
