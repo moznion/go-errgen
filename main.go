@@ -126,6 +126,7 @@ func Run(typ string, prefix string, outputFilePath string) {
 
 				root = root.AddStatements(
 					g.NewNewline(),
+					g.NewCommentf(" %sType represents the error type.", funcName),
 					g.NewRawStatementf("type %sType int", funcName),
 					g.NewNewline(),
 					g.NewRawStatement("const ("),
@@ -134,6 +135,7 @@ func Run(typ string, prefix string, outputFilePath string) {
 				for i, fname := range funcNames {
 					root = root.AddStatements(
 						g.NewNewline(),
+						g.NewCommentf(" %sType represents the error type for %s.", fname, fname),
 						g.NewRawStatementf("%sType", fname).WithNewline(false),
 					)
 					if i == 0 {
@@ -142,6 +144,7 @@ func Run(typ string, prefix string, outputFilePath string) {
 				}
 				root = root.AddStatements(
 					g.NewNewline(),
+					g.NewCommentf(" %sUnknownType represents unknown type for %s", funcName, funcName),
 					g.NewRawStatementf("%sUnknownType", funcName),
 					g.NewNewline(),
 					g.NewRawStatement(")"),
